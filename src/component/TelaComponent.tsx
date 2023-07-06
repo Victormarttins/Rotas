@@ -39,22 +39,14 @@ export default function CameraPage() {
         type={CameraType.back}
         ratio={'1:1'}
       /> 
-      <Image
-      style={styles.container}
-      source={image}
-      contentFit="cover"
-      transition={1000}
-      />
       <View style={styles.bottonCenter}>
          <TouchableHighlight 
       style={styles.botton}
         onPress={() => {takePicture()}}>
        
-        <Text 
-        style={{color:'#fff',fontSize:40}}
-         >
-        <MaterialIcons name="camera-alt" size={24} color="black" />
-        </Text>
+        
+        <MaterialIcons name="camera-alt" size={34} color="black" />
+     
       </TouchableHighlight>
     </View>
       </View>
@@ -72,7 +64,7 @@ const styles = StyleSheet.create({
     
   },
   styleCamera: {
-    aspecRatio: 1,
+   aspectRatio:1,
     flex: 1,
   },
   botton:{
