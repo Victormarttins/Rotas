@@ -1,13 +1,49 @@
 import React, { useEffect, useState } from 'react';
+import {
+  StyleSheet,
+  TouchableHighlight,
+  View,
+  Modal,
+  Text,
+  Image,
+} from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
-import { StyleSheet, TouchableHighlight, View, Image } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons'; 
-
 import * as Location from 'expo-location';
 
 export default function HomePage({ navigation }) {
-  const [markers] = useState([]);
+  const [markers, setMarkers] = useState([
+    {
+      id: 1,
+      description: 'Praça São Sebastião',
+      data: 'Construída em 1912',
+      latitude: -22.1166235,
+      longitude: -43.2099970,
+      images:
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXVrTAr0TGmpk5-PdlxqeTltHruaygMHRZkQ&usqp=CAU',
+    },
+    {
+      id: 2,
+      description: 'Praça da Autonomia',
+      data: 'Construída no século XIX',
+      latitude: -22.1151987,
+      longitude: -43.2066421,
+      images:
+        'https://www.guiadoturismobrasil.com/up/img/1443895061.jpg',
+    },
+    {
+      id: 3,
+      description: 'Viaduto',
+      data: 'Inaugurado em 2007',
+      latitude: -22.1183,
+      longitude: -43.2095,
+      images:
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5Og8LUNqMcbbNXKkV55mTCqFSwEyM0FbeUk1WGbYzvl2Cwea7e3hNJL9s-oU5CVjUQA4&usqp=CAU',
+    },
+  ]);
   const [currentLocation, setCurrentLocation] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedMarker, setSelectedMarker] = useState(null);
 
   useEffect(() => {
     getLocationPermission();
@@ -28,24 +64,14 @@ export default function HomePage({ navigation }) {
     setCurrentLocation({ latitude, longitude });
   };
 
-  const touristSpots = [
-    { id: 1, name: 'Praça São Sebastião', latitude: -22.1195, longitude: -43.2184 },
-    { id: 2, name: 'Parque de Exposições', latitude: -22.1240, longitude: -43.2189 },
-    { id: 3, name: 'Lago Azul', latitude: -22.1155, longitude: -43.1959 },
-    // Adicione outros pontos turísticos aqui
-  ];
+  const openModal = (marker) => {
+    setSelectedMarker(marker);
+    setModalVisible(true);
+  };
 
-  <View>
-    <Image style={{width:35,height:30}} source={{uri:
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRF8-fS0hg0m4CYRhPsa4bnZ0iRYqNCzsIp_3aq6fW_AcK57CWByO_PKoEd7z3vJUQS1Eg&usqp=CAU'}}>
-
-    </Image>
-  </View>
-    
-      
-       
-  
-
+  const closeModal = () => {
+    setModalVisible(false);
+  };
 
   return (
     <View style={styles.container}>
@@ -58,36 +84,27 @@ export default function HomePage({ navigation }) {
           longitudeDelta: 0.0421,
         }}
       >
-        {/* Exibe o marcador na localização atual */}
-        {currentLocation && (
-          <Marker
-            coordinate={{
-              latitude: currentLocation.latitude,
-              longitude: currentLocation.longitude,
-            }}
-          />
-        )}
-
-        {/* Exibe marcadores dos pontos turísticos */}
-        {touristSpots.map((spot) => (
-          <Marker
-            key={spot.id}
-            coordinate={{ latitude: spot.latitude, longitude: spot.longitude }}
-            title={spot.name}
-          >
-             <Image style={{width:35,height:30}} source={{uri:
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRF8-fS0hg0m4CYRhPsa4bnZ0iRYqNCzsIp_3aq6fW_AcK57CWByO_PKoEd7z3vJUQS1Eg&usqp=CAU'}}>
-
-    </Image>
-          </Marker>
-        ))}
+        {markers.map((item) => {
+          return (
+            <Marker
+              key={item.id}
+              coordinate={{ latitude: item.latitude, longitude: item.longitude }}
+              description={item.description}
+              onPress={() => openModal(item)}
+            >
+              <View style={{ overflow: 'hidden', borderRadius: 45 }}>
+                <Image style={styles.img} source={{ uri: item.images }} />
+              </View>
+            </Marker>
+          );
+        })}
       </MapView>
 
       <TouchableHighlight onPress={() => navigation.navigate('CameraPage')}>
         <View
           style={{
             justifyContent: 'center',
-            backgroundColor: '#1919',
+            backgroundColor: '#191970',
             elevation: 5,
             alignItems: 'center',
             height: 50,
@@ -97,9 +114,30 @@ export default function HomePage({ navigation }) {
             bottom: 100,
           }}
         >
-          <MaterialIcons name="camera" size={30} color="black" />
+          <MaterialIcons name="camera" size={35} color="white" />
         </View>
       </TouchableHighlight>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={closeModal}
+      >
+        <View style={styles.modalContainer}>
+          {selectedMarker && (
+            <View style={styles.modalContent}>
+              <Text style={styles.modalDescription}>{selectedMarker.description}</Text>
+              <Image style={styles.modalImage} source={{ uri: selectedMarker.images }} />
+              
+              <Text style={styles.modalData}>{selectedMarker.data}</Text>
+              <TouchableHighlight style={styles.modalButton} onPress={closeModal}>
+                <Text style={styles.modalButtonText}>Fechar</Text>
+              </TouchableHighlight>
+            </View>
+          )}
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -112,11 +150,50 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
- 
-    markerImage: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-    },
-  });
-
+  img: {
+    width: 50,
+    height: 50,
+    borderRadius: 50,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 25,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalImage: {
+    width: 300,
+    height: 300,
+    marginBottom: 10,
+    borderRadius: 10,
+    
+  },
+  modalDescription: {
+    fontSize: 20,
+    alignItems:'center',
+    justifyContent:'center',
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  modalData: {
+    fontSize: 15,
+    marginBottom: 10,
+  },
+  modalButton: {
+    backgroundColor: '#2196F3',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  modalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+});
