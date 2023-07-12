@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, TouchableHighlight, Text } from "react-native";
+import { View, StyleSheet, TouchableHighlight } from "react-native";
 import { Camera, CameraType } from "expo-camera";
 import { MaterialIcons } from '@expo/vector-icons';
-import { AntDesign } from '@expo/vector-icons'; 
+import { AntDesign } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import HomePage from "../Home/home";
 
-export default function CameraPage() {
+export default function CameraPage({navigation,route}) {
   const [image, setImage] = useState(null);
   const [camera, setCamera] = useState(null);
   const [Permission, setPermission] = useState(null);
   const [cameraType, setCameraType] = useState(CameraType.back);
+
+ 
 
   useEffect(() => {
     (async () => {
@@ -22,7 +26,10 @@ export default function CameraPage() {
       const { uri } = await camera.takePictureAsync();
       console.log(uri);
       setImage(uri);
+      
+      navigation.goBack();
     }
+    
   }
 
   function toggleCameraType() {
@@ -42,15 +49,17 @@ export default function CameraPage() {
       <View style={styles.buttonContainer}>
         <TouchableHighlight
           style={styles.button}
-          onPress={() => takePicture()}
-        >
+          onPress={takePicture}
+        > 
+      
           <MaterialIcons name="camera-alt" size={34} color="black" />
         </TouchableHighlight>
+
         <TouchableHighlight
           style={styles.button}
           onPress={() => toggleCameraType()}
         >
-         <AntDesign  name="retweet" size={24} color="black"  />
+         <AntDesign name="retweet" size={24} color="black"  />
         </TouchableHighlight>
       </View>
     </View>
@@ -84,5 +93,4 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     marginHorizontal: 8,
   },
-  
 });

@@ -40,6 +40,7 @@ export default function HomePage({ navigation }) {
       images:
         'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5Og8LUNqMcbbNXKkV55mTCqFSwEyM0FbeUk1WGbYzvl2Cwea7e3hNJL9s-oU5CVjUQA4&usqp=CAU',
     },
+
   ]);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -83,6 +84,7 @@ export default function HomePage({ navigation }) {
           latitudeDelta: 0.0922,
           longitudeDelta: 0.0421,
         }}
+        showsUserLocation={true} // Exibe o ícone de localização do usuário no mapa
       >
         {markers.map((item) => {
           return (
