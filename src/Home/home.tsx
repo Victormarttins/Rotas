@@ -16,6 +16,8 @@ import * as Location from 'expo-location';
 import { Camera } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 import { Keyboard } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
 
 const App = () => {
   const [markers, setMarkers] = useState([]);
@@ -136,9 +138,6 @@ const App = () => {
     setModalVisible(true);
   };
 
-  const handleBackToMap = () => {
-    setCameraVisible(false);
-  };
 
   const handleDeleteMarker = (imageUri) => {
     const updatedMarkers = markers.filter((marker) => marker.imageUri !== imageUri);
@@ -182,6 +181,8 @@ const App = () => {
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
           }}
+          showsUserLocation={true}
+          
         >
           {markers.map((marker) => (
             <Marker
@@ -214,14 +215,12 @@ const App = () => {
           onMountError={(error) => console.log('Erro ao montar a câmera:', error)}
         >
           <TouchableOpacity style={styles.captureButton} onPress={handleCaptureImage}>
-            <Icon name="camera" size={30} color="#FFFFFF" />
+           <MaterialIcons name="camera-alt" size={34} color="black"  />
           </TouchableOpacity>
           <TouchableOpacity style={styles.toggleButton} onPress={toggleCameraType}>
-            <Icon name="flip-camera-ios" size={30} color="#FFFFFF" />
+          <AntDesign name="retweet" size={24} color="black" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.backButton} onPress={handleBackToMap}>
-            <Icon name="arrow-back" size={30} color="#FFFFFF" />
-          </TouchableOpacity>
+          
         </Camera>
       )}
 
@@ -240,13 +239,7 @@ const App = () => {
                 value={markerTitle}
                 onChangeText={setMarkerTitle}
               />
-              <TextInput
-                style={styles.input}
-                placeholder="Descrição"
-                value={markerDescription}
-                onChangeText={setMarkerDescription}
-                multiline={true}
-              />
+              
               <View style={{flexDirection:'row' , justifyContent:'space-between'}}>
                 <Button title="Salvar" onPress={handleSaveMarker} />
                 <Button title="Deletar" onPress={handleDeleteConfirmation} />
@@ -290,7 +283,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 30,
     alignSelf: 'center',
-    backgroundColor: '#303F9F',
+    backgroundColor: '#1919',
     borderRadius: 40,
     padding: 15,
     elevation: 5,
@@ -299,7 +292,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 30,
     left: 20,
-    backgroundColor: '#303F9F',
+    backgroundColor: '#1919',
     borderRadius: 20,
     padding: 10,
     elevation: 5,
@@ -308,7 +301,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 30,
     alignSelf: 'flex-end',
-    backgroundColor: '#303F9F',
+    backgroundColor: '#1919',
     borderRadius: 40,
     padding: 15,
     elevation: 5,
