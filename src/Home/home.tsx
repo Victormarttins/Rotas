@@ -11,9 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
-import { StyleSheet, TouchableHighlight, View, Image } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons'; 
-
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import * as Location from 'expo-location';
 import { Camera } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
@@ -72,23 +70,97 @@ const App = () => {
     setCurrentLocation({ latitude, longitude });
   };
 
-  const touristSpots = [
-    { id: 1, name: 'Praça São Sebastião', latitude: -22.1195, longitude: -43.2184 },
-    { id: 2, name: 'Parque de Exposições', latitude: -22.1240, longitude: -43.2189 },
-    { id: 3, name: 'Lago Azul', latitude: -22.1155, longitude: -43.1959 },
-    // Adicione outros pontos turísticos aqui
-  ];
+  const handleAddMarker = () => {
+    if (currentLocation && capturedImage) {
+      const newMarker = {
+        id: markers.length.toString(),
+        coordinate: currentLocation,
+        imageUri: capturedImage,
+        title: '',
+        description: '',
+      };
+      setMarkers([...markers, newMarker]);
+    }
+    setCameraVisible(false);
+  };
 
-  <View>
-    <Image style={{width:35,height:30}} source={{uri:
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRF8-fS0hg0m4CYRhPsa4bnZ0iRYqNCzsIp_3aq6fW_AcK57CWByO_PKoEd7z3vJUQS1Eg&usqp=CAU'}}>
+  const saveToGallery = async (photoUri) => {
+    try {
+      await MediaLibrary.saveToLibraryAsync(photoUri);
+      console.log('Imagem salva na galeria');
+    } catch (error) {
+      console.log('Erro ao salvar imagem na galeria:', error);
+    }
+  };
 
-    </Image>
-  </View>
-    
-      
-       
-  
+  const handleOpenCamera = async () => {
+    const { status } = await Camera.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      console.log('Permissão da câmera não concedida');
+    } else {
+      setCameraVisible(true);
+    }
+  };
+
+  const handleCaptureImage = async () => {
+    if (cameraRef.current) {
+      const photo = await cameraRef.current.takePictureAsync();
+      await saveToGallery(photo.uri);
+
+      const newMarker = {
+        id: markers.length.toString(),
+        coordinate: currentLocation,
+        imageUri: photo.uri,
+        title: '',
+        description: '',
+      };
+      setMarkers([...markers, newMarker]);
+
+      setCapturedImage(photo.uri);
+      setCameraVisible(false);
+      handleAddMarker();
+    }
+  };
+
+  const renderMarkerCallout = (marker) => (
+    <TouchableOpacity onPress={dismissKeyboard}>
+      <Image source={{ uri: marker.imageUri }} style={styles.markerImage} />
+      <Text style={{ textAlign: 'center', fontWeight: 'bold', fontStyle: 'italic', color: '#303F9F' }}>
+        {marker.title}
+      </Text>
+    </TouchableOpacity>
+  );
+
+  const handleMarkerPress = (marker) => {
+    setMarkerImageUri(marker.imageUri);
+    setMarkerTitle(marker.title);
+    setMarkerDescription(marker.description);
+    setModalVisible(true);
+  };
+
+
+  const handleDeleteMarker = (imageUri) => {
+    const updatedMarkers = markers.filter((marker) => marker.imageUri !== imageUri);
+    setMarkers(updatedMarkers);
+    setModalVisible(false);
+  };
+
+  const handleSaveMarker = () => {
+    const updatedMarkers = markers.map((marker) => {
+      if (marker.imageUri === markerImageUri) {
+        return {
+          ...marker,
+          title: markerTitle,
+          description: markerDescription,
+        };
+      }
+      return marker;
+    });
+
+    setMarkers(updatedMarkers);
+    setModalVisible(false);
+    dismissKeyboard();
+  };
 
   const toggleCameraType = () => {
     setCameraType((prevType) =>
@@ -100,39 +172,39 @@ const App = () => {
 
   return (
     <View style={styles.container}>
-      <MapView
-        style={styles.map}
-        initialRegion={{
-          latitude: -22.1234,
-          longitude: -43.2096,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        }}
-      >
-        {/* Exibe o marcador na localização atual */}
-        {currentLocation && (
-          <Marker
-            coordinate={{
-              latitude: currentLocation.latitude,
-              longitude: currentLocation.longitude,
-            }}
-          />
-        )}
+      {currentLocation ? (
+        <MapView
+          style={styles.map}
+          initialRegion={{
+            latitude: currentLocation.latitude,
+            longitude: currentLocation.longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+          showsUserLocation={true}
+          
+        >
+          {markers.map((marker) => (
+            <Marker
+              key={marker.id}
+              coordinate={marker.coordinate}
+              onPress={() => handleMarkerPress(marker)}
+            >
+              {renderMarkerCallout(marker)}
+            </Marker>
+          ))}
+        </MapView>
+      ) : (
+        <Text style={styles.loadingText}>Carregando mapa...</Text>
+      )}
 
-        {/* Exibe marcadores dos pontos turísticos */}
-        {touristSpots.map((spot) => (
-          <Marker
-            key={spot.id}
-            coordinate={{ latitude: spot.latitude, longitude: spot.longitude }}
-            title={spot.name}
-          >
-             <Image style={{width:35,height:30}} source={{uri:
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRF8-fS0hg0m4CYRhPsa4bnZ0iRYqNCzsIp_3aq6fW_AcK57CWByO_PKoEd7z3vJUQS1Eg&usqp=CAU'}}>
-
-    </Image>
-          </Marker>
-        ))}
-      </MapView>
+      {!isCameraVisible && (
+        <TouchableOpacity style={styles.buttonContainer} onPress={handleOpenCamera}>
+          <View style={styles.iconContainer}>
+            <Icon name="camera" size={30} color="#FFFFFF" />
+          </View>
+        </TouchableOpacity>
+      )}
 
       {isCameraVisible && (
         <Camera
