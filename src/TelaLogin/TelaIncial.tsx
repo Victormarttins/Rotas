@@ -6,69 +6,60 @@ import {
   TouchableHighlight,
   Image,
   Button,
+  Animated,
 } from 'react-native';
-import Animated, {
-  useSharedValue,
-  withTiming,
-  useAnimatedStyle,
-  Easing,
-  
-} from 'react-native-reanimated';
 
 export default function Login({ navigation }) {
-  const randomWidth = useSharedValue(10);
+  const [x, setX] = useState(0);
+  const slide = new Animated.Value(-200);
+  
 
-  const config = {
-    duration: 500,
-    easing: Easing.bezier(0.5, 0.01, 0, 1),
-  };
-  function deslizarParaOCentro{
+  useEffect(() => {
+    Animated.timing(slide, {
+      toValue: 0,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start(); 
 
-  }
-
-  const style = useAnimatedStyle(() => {
-    return {
-      width: withTiming(randomWidth.value, config  ),
-    };
-  });
+   
+  }, []);
 
   return (
+
     <View style={styles.container}>
-      <Animated.View style={[styles.img, style]} />
-      <Button
-        title="toggle"
-        onPress={() => {
-          randomWidth.value = Math.random() * 350;
-        }}
-      />
-   
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        keyboardType="email-address"
-        textContentType="emailAddress"
-        autoCapitalize="none"
-        autoComplete="email"
-        autoCorrect={false}
-        onChangeText={() => { }}
-      />
+      <Animated.View style={[styles.animaçao, { transform: [{ translateX: slide }] }]}>
+      <Image style={styles.img} source={{uri:"https://www.totvs.com/wp-content/uploads/2022/05/gerenciador-de-rotas.jpg"}} />
+      </Animated.View>
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          keyboardType="email-address"
+          textContentType="emailAddress"
+          autoCapitalize="none"
+          autoComplete="email"
+          autoCorrect={false}
+          onChangeText={() => { }}
+        />
+      
+        <TextInput
+          style={styles.input}
+          placeholder="Senha"
+          textContentType="password"
+          autoCapitalize="none"
+          autoComplete="password"
+          autoCorrect={false}
+          secureTextEntry={true}
+          onChangeText={() => { }}
+        />
+      
 
-      <TextInput
-        style={styles.input}
-        placeholder="Senha"
-        textContentType="password"
-        autoCapitalize="none"
-        autoComplete="password"
-        autoCorrect={false}
-        secureTextEntry={true}
-        onChangeText={() => { }}
-      />
+      
+        <TouchableHighlight style={styles.buttonSubmit}
+          onPress={() => navigation.navigate('HomePage')}>
+          <Text style={styles.submitText}>Acessar</Text>
+        </TouchableHighlight>
+      
 
-      <TouchableHighlight style={styles.buttonSubmit}
-        onPress={() => navigation.navigate('HomePage')}
-      >
-        <Text style={styles.submitText}>Acessar</Text>
-      </TouchableHighlight>
     </View>
   );
 }
@@ -78,7 +69,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#191919'
   },
 
   input: {
@@ -94,7 +84,7 @@ const styles = StyleSheet.create({
 
   buttonSubmit: {
     backgroundColor: '#59BFFF',
-    width: '40%',
+    width: '50%',
     height: 45,
     alignItems: 'center',
     justifyContent: 'center',
@@ -108,11 +98,18 @@ const styles = StyleSheet.create({
   },
 
   img: {
-    width: '60%',
-    height:'30%'
+    width: '100%',
+    height:'100%',
+    borderRadius:40,
+    marginHorizontal:3
   },
+  animaçao:{
+    width: '90%',
+    height:300,
+    borderRadius:30,
+  
+    paddingBottom:40
+  }
 })
-function delight(finished?: boolean, current?: AnimatableValue): void {
-  throw new Error('Function not implemented.');
-}
 
+ 
