@@ -19,7 +19,7 @@ import { Keyboard } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 
-const App = () => {
+export default function HomePage ()  {
   const [markers, setMarkers] = useState([]);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [isCameraVisible, setCameraVisible] = useState(false);
@@ -29,8 +29,7 @@ const App = () => {
   const [markerTitle, setMarkerTitle] = useState('');
   const [markerDescription, setMarkerDescription] = useState('');
   const [cameraType, setCameraType] = useState(Camera.Constants.Type['back']);
-
-  
+  const [capturedDescription, setCapturedDescription] = useState('');
   const handleDeleteConfirmation = () => {
     Alert.alert(
       'Confirmação',
@@ -160,6 +159,8 @@ const App = () => {
     setMarkers(updatedMarkers);
     setModalVisible(false);
     dismissKeyboard();
+    setCapturedDescription('')
+   
   };
 
   const toggleCameraType = () => {
@@ -168,6 +169,11 @@ const App = () => {
         ? Camera.Constants.Type['front']
         : Camera.Constants.Type['back']
     );
+   
+    
+
+   
+
   };
 
   return (
@@ -239,10 +245,20 @@ const App = () => {
                 value={markerTitle}
                 onChangeText={setMarkerTitle}
               />
+               <TextInput
+          style={styles.input}
+          placeholder="Descrição"
+          value={capturedDescription}
+          onChangeText={setCapturedDescription}
+        
+        />  
+        
+      
               
               <View style={{flexDirection:'row' , justifyContent:'space-between'}}>
                 <Button title="Salvar" onPress={handleSaveMarker} />
                 <Button title="Deletar" onPress={handleDeleteConfirmation} />
+
               </View>
             </View>
           </View>
@@ -340,4 +356,3 @@ const styles = StyleSheet.create({
   },
 });
 
-export default App;

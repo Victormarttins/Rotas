@@ -4,7 +4,7 @@ import { Camera, CameraType } from "expo-camera";
 import { MaterialIcons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import HomePage from "../Home/home";
+
 
 export default function CameraPage({ navigation, route }) {
   const [image, setImage] = useState(null);
