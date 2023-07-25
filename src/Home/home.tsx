@@ -18,6 +18,8 @@ import * as MediaLibrary from 'expo-media-library';
 import { Keyboard } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
+import {onValue, ref } from 'firebase/database';
+import { db } from '../../firebase-config';
 
 export default function HomePage ()  {
   const [markers, setMarkers] = useState([]);
@@ -30,6 +32,29 @@ export default function HomePage ()  {
   const [markerDescription, setMarkerDescription] = useState('');
   const [cameraType, setCameraType] = useState(Camera.Constants.Type['back']);
   const [capturedDescription, setCapturedDescription] = useState('');
+
+async function getPLaces(){
+  return onValue(ref(db,'/places'),(snapshot)=>{
+    console.log('dados no Realtime',snapshot)
+  })
+  
+ 
+}
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   const handleDeleteConfirmation = () => {
     Alert.alert(
       'Confirmação',
@@ -51,6 +76,7 @@ export default function HomePage ()  {
   const cameraRef = useRef(null);
 
   useEffect(() => {
+    getPLaces();
     getLocationPermission();
   }, []);
 
@@ -245,15 +271,14 @@ export default function HomePage ()  {
                 value={markerTitle}
                 onChangeText={setMarkerTitle}
               />
+              
                <TextInput
           style={styles.input}
           placeholder="Descrição"
           value={capturedDescription}
           onChangeText={setCapturedDescription}
         
-        />  
-        
-      
+        /> 
               
               <View style={{flexDirection:'row' , justifyContent:'space-between'}}>
                 <Button title="Salvar" onPress={handleSaveMarker} />
@@ -355,4 +380,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 });
+
+
 

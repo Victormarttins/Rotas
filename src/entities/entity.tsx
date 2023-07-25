@@ -1,8 +1,11 @@
-interface PontoTuristico {
+interface PontoEntity {
+    newName: string;
+    selectedMarker: PontoEntity;
+    newDescription:string;
     description: string;
-    data: string;
-    latitude: number;
-    longitude: number;
+    data: number;
+    coords:{latitude: number;
+      longitude: number;};
     images: string;
   }
   
