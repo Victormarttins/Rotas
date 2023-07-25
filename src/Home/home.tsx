@@ -18,7 +18,7 @@ import * as MediaLibrary from 'expo-media-library';
 import { Keyboard } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
-import {onValue, ref } from 'firebase/database';
+import {, ref } from 'firebase/database';
 import { db } from '../../firebase-config';
 
 export default function HomePage ()  {
@@ -34,7 +34,7 @@ export default function HomePage ()  {
   const [capturedDescription, setCapturedDescription] = useState('');
 
 async function getPLaces(){
-  return onValue(ref(db,'/places'),(snapshot)=>{
+  return (ref(db,'/places'),(snapshot)=>{
     console.log('dados no Realtime',snapshot)
   })
   
@@ -381,5 +381,7 @@ const styles = StyleSheet.create({
   },
 });
 
-
+function onValue(arg0: any, arg1: (snapshot: any) => void) {
+  throw new Error('Function not implemented.');
+}
 

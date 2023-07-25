@@ -1,7 +1,6 @@
-interface PontoEntity {
+interface PontoEntity{
     newName: string;
-    selectedMarker: PontoEntity;
-    newDescription:string;
+    newDescription: string;
     description: string;
     data: number;
     coords:{latitude: number;
