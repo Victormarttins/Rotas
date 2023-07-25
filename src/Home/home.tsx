@@ -18,7 +18,7 @@ import * as MediaLibrary from 'expo-media-library';
 import { Keyboard } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
-import {, ref } from 'firebase/database';
+import { ref } from 'firebase/database';
 import { db } from '../../firebase-config';
 
 export default function HomePage ()  {
