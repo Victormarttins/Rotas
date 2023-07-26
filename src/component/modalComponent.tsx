@@ -6,7 +6,7 @@ import { Marker } from 'react-native-maps';
 
 interface Props {
   modalOpen: boolean;
-  selectedMarker: PontoEntity;
+  marker: PlaceEntity;
   modalClose: () => void;
   deleteMarker: () => void;
 }
@@ -18,8 +18,8 @@ export default function ModalComponent(props: Props) {
 
   const handleSaveDescription = () => {
     if (customDescription.trim() !== '' && customName.trim() !== '') {
-      props.selectedMarker.newDescription = customDescription;
-      props.selectedMarker.newName = customName;
+      props.marker.description = customDescription;
+      props.marker.title = customName;
       setCustomDescription('');
       setCustomName('');
       setEditing(false);
@@ -57,7 +57,7 @@ export default function ModalComponent(props: Props) {
     <View>
       <Modal animationType="slide" transparent={true} visible={props.modalOpen}>
         <View style={styles.modalContainer}>
-          {props.selectedMarker && (
+          {props.marker && (
             <View style={styles.modalContent}>
               <TouchableHighlight style={styles.closeButton} onPress={props.modalClose}>
                 <AntDesign name="closecircleo" size={40} color="black" />
@@ -71,11 +71,12 @@ export default function ModalComponent(props: Props) {
                     value={customName}
                   />
                 ) : (
-                  <Text style={styles.modalName}>{props.selectedMarker.newName}</Text>
+                  <Text style={styles.modalName}>{props.marker.title}</Text>
                 )}
               </View>
               <View style={styles.imageContainer}>
-                <Image style={styles.modalImage} source={{ uri: props.selectedMarker.images }} />
+                <Image style={styles.modalImage} source={{ uri: props.marker.imagePath }} />
+                
                 {editing ? (
                   <TextInput
                     style={styles.inputDescription}
@@ -84,7 +85,7 @@ export default function ModalComponent(props: Props) {
                     value={customDescription}
                   />
                 ) : (
-                  <Text style={styles.newDescription}>{props.selectedMarker.newDescription}</Text>
+                  <Text style={styles.newDescription}>{props.marker.description}</Text>
                 )}
               </View>
               <View style={styles.buttonContainer}>

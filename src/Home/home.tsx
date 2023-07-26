@@ -18,29 +18,48 @@ import * as MediaLibrary from 'expo-media-library';
 import { Keyboard } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
-import { ref } from 'firebase/database';
+import { onValue,ref } from 'firebase/database';
 import { db } from '../../firebase-config';
+import ModalComponent from '../component/modalComponent';
 
-export default function HomePage ()  {
-  const [markers, setMarkers] = useState([]);
+export default function HomePage() {
+  const [markers, setMarkers] = useState<PlaceEntity[]>([]);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [isCameraVisible, setCameraVisible] = useState(false);
-  const [capturedImage, setCapturedImage] = useState(null);
+  const [capturedImage, setCapturedImage] = useState('');
   const [isModalVisible, setModalVisible] = useState(false);
   const [markerImageUri, setMarkerImageUri] = useState(null);
   const [markerTitle, setMarkerTitle] = useState('');
   const [markerDescription, setMarkerDescription] = useState('');
   const [cameraType, setCameraType] = useState(Camera.Constants.Type['back']);
   const [capturedDescription, setCapturedDescription] = useState('');
+  const [modalOpen, setModalOpen] = useState(false)
 
-async function getPLaces(){
-  return (ref(db,'/places'),(snapshot)=>{
-    console.log('dados no Realtime',snapshot)
-  })
-  
- 
-}
-  
+
+
+  async function getPLaces() {
+    return onValue(ref(db, '/places'), (snapshot) => {
+      console.log('dados no Realtime', snapshot)
+      try {
+        setMarkers([]);
+        if (snapshot !== undefined) {
+          snapshot.forEach((childSnapshot) => {
+
+            const childKey = childSnapshot.key;
+            let childValue = childSnapshot.val()
+            childValue.id = childKey;
+            setMarkers((places) => [...places, (childValue as PlaceEntity)])
+          })
+
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    })
+
+
+  }
+
 
 
 
@@ -67,7 +86,7 @@ async function getPLaces(){
   };
 
 
-  
+
 
   const dismissKeyboard = () => {
     Keyboard.dismiss();
@@ -99,12 +118,16 @@ async function getPLaces(){
     if (currentLocation && capturedImage) {
       const newMarker = {
         id: markers.length.toString(),
-        coordinate: currentLocation,
-        imageUri: capturedImage,
+        coords:{
+          latitude: currentLocation.latitude,
+          longitude:currentLocation.longitude
+        }, 
+        imagePath: capturedImage,
         title: '',
         description: '',
+        photoDate:Date().toString()
       };
-      setMarkers([...markers, newMarker]);
+      setMarkers([...markers, (newMarker as PlaceEntity)]);
     }
     setCameraVisible(false);
   };
@@ -134,10 +157,14 @@ async function getPLaces(){
 
       const newMarker = {
         id: markers.length.toString(),
-        coordinate: currentLocation,
-        imageUri: photo.uri,
+        coords: {
+          latitude: currentLocation.latitude,
+          longitude:currentLocation.longitude
+        },
+        imagePath: photo.uri,
         title: '',
         description: '',
+        photoDate:Date().toString()
       };
       setMarkers([...markers, newMarker]);
 
@@ -147,32 +174,33 @@ async function getPLaces(){
     }
   };
 
-  const renderMarkerCallout = (marker) => (
+  const renderMarkerCallout = (marker:PlaceEntity) => (
     <TouchableOpacity onPress={dismissKeyboard}>
-      <Image source={{ uri: marker.imageUri }} style={styles.markerImage} />
+      <Image source={{ uri: marker.imagePath }} style={styles.markerImage} />
       <Text style={{ textAlign: 'center', fontWeight: 'bold', fontStyle: 'italic', color: '#303F9F' }}>
         {marker.title}
       </Text>
     </TouchableOpacity>
   );
 
-  const handleMarkerPress = (marker) => {
-    setMarkerImageUri(marker.imageUri);
+  const handleMarkerPress = (marker:PlaceEntity) => {
+    setMarkerImageUri(marker.imagePath);
     setMarkerTitle(marker.title);
     setMarkerDescription(marker.description);
-    setModalVisible(true);
+    setModalOpen(true)
+
   };
 
 
-  const handleDeleteMarker = (imageUri) => {
-    const updatedMarkers = markers.filter((marker) => marker.imageUri !== imageUri);
+  const handleDeleteMarker = (ImageUri) => {
+    const updatedMarkers = markers.filter((marker) => marker.imagePath !== ImageUri);
     setMarkers(updatedMarkers);
     setModalVisible(false);
   };
 
   const handleSaveMarker = () => {
     const updatedMarkers = markers.map((marker) => {
-      if (marker.imageUri === markerImageUri) {
+      if (marker.imagePath === markerImageUri) {
         return {
           ...marker,
           title: markerTitle,
@@ -186,7 +214,7 @@ async function getPLaces(){
     setModalVisible(false);
     dismissKeyboard();
     setCapturedDescription('')
-   
+
   };
 
   const toggleCameraType = () => {
@@ -195,10 +223,10 @@ async function getPLaces(){
         ? Camera.Constants.Type['front']
         : Camera.Constants.Type['back']
     );
-   
-    
 
-   
+
+
+
 
   };
 
@@ -214,12 +242,12 @@ async function getPLaces(){
             longitudeDelta: 0.0421,
           }}
           showsUserLocation={true}
-          
+
         >
           {markers.map((marker) => (
             <Marker
               key={marker.id}
-              coordinate={marker.coordinate}
+              coordinate={marker.coords}
               onPress={() => handleMarkerPress(marker)}
             >
               {renderMarkerCallout(marker)}
@@ -247,48 +275,20 @@ async function getPLaces(){
           onMountError={(error) => console.log('Erro ao montar a câmera:', error)}
         >
           <TouchableOpacity style={styles.captureButton} onPress={handleCaptureImage}>
-           <MaterialIcons name="camera-alt" size={34} color="black"  />
+            <MaterialIcons name="camera-alt" size={34} color="black" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.toggleButton} onPress={toggleCameraType}>
-          <AntDesign name="retweet" size={24} color="black" />
+            <AntDesign name="retweet" size={24} color="black" />
           </TouchableOpacity>
-          
+
         </Camera>
       )}
 
-      <Modal visible={isModalVisible} animationType="slide" transparent={true}>
-        <TouchableOpacity activeOpacity={1} style={styles.modalContainer} onPress={dismissKeyboard}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              {markerImageUri && (
-                <>
-                  <Image source={{ uri: markerImageUri }} style={styles.modalImage} />
-                </>
-              )}
-              <TextInput
-                style={styles.input}
-                placeholder="Título"
-                value={markerTitle}
-                onChangeText={setMarkerTitle}
-              />
-              
-               <TextInput
-          style={styles.input}
-          placeholder="Descrição"
-          value={capturedDescription}
-          onChangeText={setCapturedDescription}
-        
-        /> 
-              
-              <View style={{flexDirection:'row' , justifyContent:'space-between'}}>
-                <Button title="Salvar" onPress={handleSaveMarker} />
-                <Button title="Deletar" onPress={handleDeleteConfirmation} />
-
-              </View>
-            </View>
-          </View>
-        </TouchableOpacity>
-      </Modal>
+      <ModalComponent modalOpen={modalOpen} marker={markerImageUri} modalClose={() => setModalOpen(false)}
+        deleteMarker={() => {
+          const updatedMarker = markers.filter((item) => item.id !== markerImageUri?.id);
+          setMarkers(updatedMarker);
+        }}  />
     </View>
   );
 };
@@ -380,8 +380,4 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 });
-
-function onValue(arg0: any, arg1: (snapshot: any) => void) {
-  throw new Error('Function not implemented.');
-}
 

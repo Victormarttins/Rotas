@@ -1,10 +1,13 @@
-interface PontoEntity{
-    newName: string;
-    newDescription: string;
-    description: string;
-    data: number;
-    coords:{latitude: number;
-      longitude: number;};
-    images: string;
-  }
-  
+interface PlaceEntity {
+
+  id: string;
+  title: string;
+  description: string;
+  photoDate: string;
+  coords: {
+    latitude: number;
+    longitude: number;
+  };
+  imagePath: string;
+}
+
