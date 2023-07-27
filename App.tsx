@@ -13,13 +13,9 @@ export default function App({navigation}:any) {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-       
-        <Stack.Screen name="HomePage" component={HomePage} />
-        <Stack.Screen name="camera" options={({route})=>({
-          
-          headerShown:false
-        })} />
+     <Stack.Navigator initialRouteName='HomePage' screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="CameraPage" component={CameraPage} />
+        <Stack.Screen name="HomePage" component={HomePage} initialParams={{ capturedImage: null }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

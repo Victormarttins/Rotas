@@ -1,108 +1,68 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
+  Image,
   TouchableOpacity,
-  Text,
   Modal,
   TextInput,
-  Button,
-  Image,
+  Text,
   Alert,
+  Keyboard,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import * as Location from 'expo-location';
-import { Camera } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
-import { Keyboard } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { AntDesign } from '@expo/vector-icons';
-import { onValue,push,ref } from 'firebase/database';
-import { db } from '../../firebase-config';
-import ModalComponent from '../component/modalComponent';
+import * as Animatable from 'react-native-animatable';
+import { onValue, push, ref } from 'firebase/database';
+import { app, db } from '../../firebase-config';
+import * as firebaseStorage from '@firebase/storage'
+import { Camera } from 'expo-camera';
 
-export default function HomePage({navigation,route}:any) {
+
+export default function HomePage ({ navigation, route })  {
+  const { capturedImage } = route.params;
   const [markers, setMarkers] = useState<PlaceEntity[]>([]);
-  const [currentLocation, setCurrentLocation] = useState(null);
-  const [isCameraVisible, setCameraVisible] = useState(false);
-  const [capturedImage, setCapturedImage] = useState('');
+  const [currentLocation, setCurrentLocation] = useState<any>(null);
   const [isModalVisible, setModalVisible] = useState(false);
-  const [markerImageUri, setMarkerImageUri] = useState(null);
-  const [markerTitle, setMarkerTitle] = useState('');
+  const [markerImageUri, setMarkerImageUri] = useState<string | null>(null);
   const [markerDescription, setMarkerDescription] = useState('');
-  const [cameraType, setCameraType] = useState(Camera.Constants.Type['back']);
-  const [capturedDescription, setCapturedDescription] = useState('');
-  const [modalOpen, setModalOpen] = useState(false)
-  const [image, setImage] = useState(null);
+  const [isEditing, setEditing] = useState(false);
+  const [photoDate, setPhotoDate] = useState<string>('');
+  const [markerTitle, setMarkerTitle] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
-
-  async function getPLaces() {
-    return onValue(ref(db, '/places'), (snapshot) => {
-      console.log('dados no Realtime', snapshot)
-      try {
-        setMarkers([]);
-        if (snapshot !== undefined) {
-          snapshot.forEach((childSnapshot) => {
-
-            const childKey = childSnapshot.key;
-            let childValue = childSnapshot.val()
-            childValue.id = childKey;
-            setMarkers((places) => [...places, (childValue as PlaceEntity)])
-          })
-
-        }
-      } catch (e) {
-        console.log(e)
-      }
-    })
-
-
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  const handleDeleteConfirmation = () => {
-    Alert.alert(
-      'Confirmação',
-      'Tem certeza de que deseja excluir?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Excluir', style: 'destructive', onPress: () => handleDeleteMarker(markerImageUri) },
-      ]
-    );
-  };
-
-
-
-
-  const dismissKeyboard = () => {
-    Keyboard.dismiss();
-  };
-
-  const cameraRef = useRef(null);
+  
 
   useEffect(() => {
-    getPLaces();
     getLocationPermission();
+    getCameraPermission();
+    getMediaLibraryPermission();
+
   }, []);
+
+  const getCameraPermission = async () => {
+    const { status } = await Camera.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permissão de câmera não concedida');
+    }
+  };
+
+  const getMediaLibraryPermission = async () => {
+    const { status } = await MediaLibrary.requestPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permissão de biblioteca de mídia não concedida');
+    }
+  };
 
   const getLocationPermission = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
-      console.log('Permissão de localização não concedida');
+      Alert.alert('Permissão de localização não concedida');
     } else {
       getCurrentLocation();
     }
@@ -114,83 +74,46 @@ export default function HomePage({navigation,route}:any) {
     setCurrentLocation({ latitude, longitude });
   };
 
-  const handleAddMarker = () => {
+  const handleAddMarker = async () => {
     if (currentLocation && capturedImage) {
-      const newMarker = {
-        id: markers.length.toString(),
-        coords:{
-          latitude: currentLocation.latitude,
-          longitude:currentLocation.longitude
-        }, 
-        imagePath: capturedImage,
-        title: '',
-        description: '',
-        photoDate:Date().toString()
-      };
+      const currentDate = new Date();
+     
 
-      setMarkers([...markers, (newMarker as PlaceEntity)]);
+
+      const newMarker: PlaceEntity = {
+        id: '',
+        coords: { latitude: currentLocation.latitude, longitude: currentLocation.longitude },
+        imagePath: await uploadImage(capturedImage),
+        description: '',
+        photoDate: '',
+        title: ''
+      };
+      setMarkers([...markers, newMarker]);
+      push(ref(db, 'places'), newMarker);
     }
-    setCameraVisible(false);
   };
 
-  const saveToGallery = async (photoUri) => {
+  
+
+  const saveToGallery = async (photoUri: string) => {
     try {
       await MediaLibrary.saveToLibraryAsync(photoUri);
-      console.log('Imagem salva na galeria');
     } catch (error) {
-      console.log('Erro ao salvar imagem na galeria:', error);
+      Alert.alert('Erro ao salvar imagem na galeria:', error);
     }
   };
 
- 
-
-  const handleCaptureImage = async () => {
-    if (cameraRef.current) {
-      const photo = await cameraRef.current.takePictureAsync();
-      await saveToGallery(photo.uri);
-
-      const newMarker = {
-        id: markers.length.toString(),
-        coords: {
-          latitude: currentLocation.latitude,
-          longitude:currentLocation.longitude
-        },
-        imagePath: photo.uri,
-        title: '',
-        description: '',
-        photoDate:Date().toString()
-      };
-      push(ref(db,'places'),newMarker)
-      setMarkers([...markers, newMarker]);
-
-      setCapturedImage(photo.uri);
-      setCameraVisible(false);
-      handleAddMarker();
-    }
-  };
-
-  const renderMarkerCallout = (marker:PlaceEntity) => (
-    <TouchableOpacity onPress={dismissKeyboard}>
-      <Image source={{ uri: marker.imagePath }} style={styles.markerImage} />
-      <Text style={{ textAlign: 'center', fontWeight: 'bold', fontStyle: 'italic', color: '#303F9F' }}>
-        {marker.title}
-      </Text>
-    </TouchableOpacity>
-  );
-
-  const handleMarkerPress = (marker:PlaceEntity) => {
+  const handleMarkerPress = (marker: PlaceEntity) => {
     setMarkerImageUri(marker.imagePath);
     setMarkerTitle(marker.title);
     setMarkerDescription(marker.description);
-    setModalOpen(true)
-
+    setPhotoDate(marker.photoDate);
+    setModalVisible(true);
+    setEditing(false);
   };
 
-
-  const handleDeleteMarker = (ImageUri) => {
-    const updatedMarkers = markers.filter((marker) => marker.imagePath !== ImageUri);
-    setMarkers(updatedMarkers);
-    setModalVisible(false);
+  const handleEdit = () => {
+    setEditing(true);
   };
 
   const handleSaveMarker = () => {
@@ -208,60 +131,191 @@ export default function HomePage({navigation,route}:any) {
     setMarkers(updatedMarkers);
     setModalVisible(false);
     dismissKeyboard();
-    setCapturedDescription('')
-
   };
 
-  const toggleCameraType = () => {
-    setCameraType((prevType) =>
-      prevType === Camera.Constants.Type['back']
-        ? Camera.Constants.Type['front']
-        : Camera.Constants.Type['back']
+  const handleDeleteMarker = (imageUri: string | null) => {
+    const updatedMarkers = markers.filter((marker) => marker.imagePath !== imageUri);
+    setMarkers(updatedMarkers);
+    setModalVisible(false);
+    dismissKeyboard();
+  };
+
+  const handleAddMarkerAndSaveToGallery = async () => {
+    if (currentLocation && capturedImage) {
+      await saveToGallery(capturedImage);
+      handleAddMarker();
+    }
+  };
+
+  async function getPlaces() {
+    return onValue(ref(db, '/places'), (snapshot) => {
+      try {
+        setMarkers([]);
+        if (snapshot !== undefined) {
+          snapshot.forEach((childSnapshot) => {
+
+            const childkey = childSnapshot.key;
+            let childValue = childSnapshot.val();
+            childValue.id = childkey;
+            setMarkers((places) => [...places, (childValue as PlaceEntity)])
+          });
+        }
+      } catch (e) {
+        console.log(e);
+      }
+
+    });
+  }
+
+  useEffect(() => {
+
+    getPlaces()
+    handleAddMarkerAndSaveToGallery();
+  }, [currentLocation, capturedImage]);
+
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+  };
+
+  async function uploadImage(imageUrl): Promise<string> {
+    setIsUploading(true);
+    const response = await fetch(imageUrl);
+    const blob = await response.blob();
+
+    const storage = firebaseStorage.getStorage(app);
+    const storageRef = firebaseStorage.ref(
+      storage,
+      'images/' + imageUrl.replace(/^.*[\\\/]/, '')
     );
 
+    await firebaseStorage.uploadBytes(storageRef, blob);
 
+    const uploadedImageUrl = await firebaseStorage.getDownloadURL(storageRef);
+    console.log(uploadedImageUrl);
+    setIsUploading(false);
+    return uploadedImageUrl;
+    
 
-  };
+  }
 
   return (
-    <View style={styles.container}>
-      {currentLocation ? (
-        <MapView
-          style={styles.map}
-          initialRegion={{
-            latitude: currentLocation.latitude,
-            longitude: currentLocation.longitude,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
-          }}
-          showsUserLocation={true}
+    <TouchableWithoutFeedback onPress={dismissKeyboard}>
+      <View style={styles.container}>
+      {isUploading ?
+        <View style={{ width: '100%', height: '100%', backgroundColor: 'black', opacity: 0.8, justifyContent: 'center', alignItems: 'center' }}>
+          <Image style={{ width: 100, height: 80 }} source={{ uri: 'https://i.gifer.com/ZWdx.gif' }} />
+          <Text style={{ color: 'white' }}>Aguarde...</Text>
+        </View> : <></>
+      }
 
-        >
-          {markers.map((marker) => (
-            <Marker
-              key={marker.id}
-              coordinate={marker.coords}
-              onPress={() => handleMarkerPress(marker)}
-            >
-              {renderMarkerCallout(marker)}
-            </Marker>
-          ))}
-        </MapView>
-      ) : (
-        <Text style={styles.loadingText}>Carregando mapa...</Text>
-      )}
+        {currentLocation ? (
+          <MapView
+            style={styles.map}
+            initialRegion={{
+              latitude: currentLocation.latitude,
+              longitude: currentLocation.longitude,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+            }}
+            showsUserLocation={true}
+          >
+            {markers.map((marker, index) => (
+              <Marker
+                key={index.toString()}
+                coordinate={marker.coords}
+                onPress={() => handleMarkerPress(marker)}
+              >
+                <View style={styles.markerContainer}>
+                  <Image source={{ uri: marker.imagePath }} style={styles.markerImage} />
+                </View>
+              </Marker>
+            ))}
+          </MapView>
+        ) : (
+          <Text style={styles.loadingText}>Carregando mapa...</Text>
+        )}
 
-      
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Camera',  { addItem: (imageUrl) => setImage(imageUrl)  })}>
-        <MaterialIcons name="camera-alt" size={34} color="black" />
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.cameraButton} onPress={() => navigation.navigate('CameraPage')}>
+          <MaterialIcons name="camera" size={30} color="#FFFFFF" />
+        </TouchableOpacity>
 
-      <ModalComponent modalOpen={modalOpen} marker={markerImageUri} modalClose={() => setModalOpen(false)}
-        deleteMarker={() => {
-          const updatedMarker = markers.filter((item) => item.id !== markerImageUri?.id);
-          setMarkers(updatedMarker);
-        }}  />
-    </View>
+        <Modal visible={isModalVisible} animationType="slide" transparent={true}>
+          <TouchableWithoutFeedback onPress={dismissKeyboard}>
+          
+              <Animatable.View
+                style={styles.modalContent}
+                animation="fadeInUp"
+                duration={500}
+                useNativeDriver
+              >
+                <View style={styles.modalHeader}>
+                  <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+                    <MaterialIcons name="close" size={24} color="black" />
+                  </TouchableOpacity>
+                </View>
+                {markerImageUri && (
+                  <Image source={{ uri: markerImageUri }} style={styles.modalImage} />
+                )}
+                <Text style={styles.dateStyle}>{photoDate}</Text>
+
+
+                {isEditing ? (
+                  <>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Título"
+                      value={markerTitle}
+                      onChangeText={setMarkerTitle}
+                    />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Descrição"
+                      value={markerDescription}
+                      onChangeText={setMarkerDescription}
+                      multiline={true}
+                      onBlur={dismissKeyboard}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Text style={styles.modalTitle}>{markerTitle}</Text>
+                    <Text style={styles.modalDescription}>{markerDescription}</Text>
+                  </>
+                )}
+                <View style={styles.modalButtonContainer}>
+                  {!isEditing && (
+                    <Animatable.View animation="fadeIn" duration={500} delay={200}>
+                      <TouchableOpacity
+                        style={[styles.editButton, { backgroundColor: '#1976D2' }]}
+                        onPress={handleEdit}
+                      >
+                        <Text style={styles.buttonText}>Editar</Text>
+                      </TouchableOpacity>
+                    </Animatable.View>
+                  )}
+                  <Animatable.View animation="fadeIn" duration={500} delay={200}>
+                    <TouchableOpacity
+                      style={[styles.saveButton, { backgroundColor: '#303F9F' }]}
+                      onPress={handleSaveMarker}
+                    >
+                      <Text style={styles.buttonText}>Salvar</Text>
+                    </TouchableOpacity>
+                  </Animatable.View>
+                  <Animatable.View animation="fadeIn" duration={500} delay={300}>
+                    <TouchableOpacity
+                      style={[styles.deleteButton, { backgroundColor: '#FF0000' }]}
+                      onPress={() => handleDeleteMarker(markerImageUri as string)}
+                    >
+                      <Text style={styles.buttonText}>Deletar</Text>
+                    </TouchableOpacity>
+                  </Animatable.View>
+                </View>
+              </Animatable.View>
+            
+          </TouchableWithoutFeedback>
+        </Modal>
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -279,7 +333,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 320,
   },
-  buttonContainer: {
+  cameraButton: {
     position: 'absolute',
     bottom: 40,
     right: 30,
@@ -288,18 +342,15 @@ const styles = StyleSheet.create({
     padding: 15,
     elevation: 5,
   },
- 
-  
-  backButton: {
-    position: 'absolute',
-    top: 30,
-    left: 20,
-    backgroundColor: '#1919',
-    borderRadius: 20,
-    padding: 10,
+  markerContainer: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+    overflow: 'hidden',
     elevation: 5,
   },
-  
   markerImage: {
     width: 50,
     height: 50,
@@ -312,10 +363,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 10,
     padding: 20,
     width: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  closeButton: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 5,
+    elevation: 5,
   },
   modalImage: {
     width: 250,
@@ -324,6 +385,23 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     alignSelf: 'center',
   },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 1,
+    textAlign: 'center',
+  },
+  modalDescription: {
+    fontSize: 16,
+    marginBottom: 10,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0.5, height: 0.5 },
+    textShadowRadius: 1,
+    textAlign: 'center',
+  },
   input: {
     borderWidth: 1,
     borderColor: '#CCCCCC',
@@ -331,15 +409,40 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
   },
-  button: {
-    justifyContent: "center",
-    backgroundColor: "#1919",
-    elevation: 5,
-    alignItems: "center",
-    height: 50,
-    width: 50,
-    borderRadius: 100,
-    marginHorizontal: 8,
-  }
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  editButton: {
+    backgroundColor: '#303F9F',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  saveButton: {
+    backgroundColor: '#303F9F',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  deleteButton: {
+    backgroundColor: '#303F9F',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+  },
+  dateStyle: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    color: 'rgba(0, 0, 0, 0.7)',
+    alignSelf: 'flex-end',
+    marginBottom: 8,
+    marginRight: 5
+
+  },
+
 });
 
