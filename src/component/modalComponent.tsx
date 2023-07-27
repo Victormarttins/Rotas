@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Alert, Modal, StyleSheet, Text, View, TouchableHighlight, TextInput } from 'react-native';
-import { Image } from "expo-image";
+import { Alert, Modal, StyleSheet, Text, View, TouchableHighlight, TextInput,Image 
+ } from 'react-native';
+
 import { AntDesign } from '@expo/vector-icons';
 import { Marker } from 'react-native-maps';
 
@@ -75,9 +76,10 @@ export default function ModalComponent(props: Props) {
                 )}
               </View>
               <View style={styles.imageContainer}>
-                <Image style={styles.modalImage} source={{ uri: props.marker.imagePath }} />
+                <Image style={{width:'100%'}} source={{ uri: props.marker.imagePath }} />
                 
                 {editing ? (
+
                   <TextInput
                     style={styles.inputDescription}
                     placeholder="Insira uma nova descrição"

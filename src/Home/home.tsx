@@ -18,11 +18,11 @@ import * as MediaLibrary from 'expo-media-library';
 import { Keyboard } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
-import { onValue,ref } from 'firebase/database';
+import { onValue,push,ref } from 'firebase/database';
 import { db } from '../../firebase-config';
 import ModalComponent from '../component/modalComponent';
 
-export default function HomePage() {
+export default function HomePage({navigation,route}:any) {
   const [markers, setMarkers] = useState<PlaceEntity[]>([]);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [isCameraVisible, setCameraVisible] = useState(false);
@@ -34,7 +34,7 @@ export default function HomePage() {
   const [cameraType, setCameraType] = useState(Camera.Constants.Type['back']);
   const [capturedDescription, setCapturedDescription] = useState('');
   const [modalOpen, setModalOpen] = useState(false)
-
+  const [image, setImage] = useState(null);
 
 
   async function getPLaces() {
@@ -127,6 +127,7 @@ export default function HomePage() {
         description: '',
         photoDate:Date().toString()
       };
+
       setMarkers([...markers, (newMarker as PlaceEntity)]);
     }
     setCameraVisible(false);
@@ -141,14 +142,7 @@ export default function HomePage() {
     }
   };
 
-  const handleOpenCamera = async () => {
-    const { status } = await Camera.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-      console.log('Permissão da câmera não concedida');
-    } else {
-      setCameraVisible(true);
-    }
-  };
+ 
 
   const handleCaptureImage = async () => {
     if (cameraRef.current) {
@@ -166,6 +160,7 @@ export default function HomePage() {
         description: '',
         photoDate:Date().toString()
       };
+      push(ref(db,'places'),newMarker)
       setMarkers([...markers, newMarker]);
 
       setCapturedImage(photo.uri);
@@ -226,8 +221,6 @@ export default function HomePage() {
 
 
 
-
-
   };
 
   return (
@@ -258,31 +251,10 @@ export default function HomePage() {
         <Text style={styles.loadingText}>Carregando mapa...</Text>
       )}
 
-      {!isCameraVisible && (
-        <TouchableOpacity style={styles.buttonContainer} onPress={handleOpenCamera}>
-          <View style={styles.iconContainer}>
-            <Icon name="camera" size={30} color="#FFFFFF" />
-          </View>
-        </TouchableOpacity>
-      )}
-
-      {isCameraVisible && (
-        <Camera
-          ref={cameraRef}
-          style={StyleSheet.absoluteFillObject}
-          type={cameraType}
-          onCameraReady={() => console.log('Câmera pronta')}
-          onMountError={(error) => console.log('Erro ao montar a câmera:', error)}
-        >
-          <TouchableOpacity style={styles.captureButton} onPress={handleCaptureImage}>
-            <MaterialIcons name="camera-alt" size={34} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.toggleButton} onPress={toggleCameraType}>
-            <AntDesign name="retweet" size={24} color="black" />
-          </TouchableOpacity>
-
-        </Camera>
-      )}
+      
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Camera',  { addItem: (imageUrl) => setImage(imageUrl)  })}>
+        <MaterialIcons name="camera-alt" size={34} color="black" />
+      </TouchableOpacity>
 
       <ModalComponent modalOpen={modalOpen} marker={markerImageUri} modalClose={() => setModalOpen(false)}
         deleteMarker={() => {
@@ -316,19 +288,8 @@ const styles = StyleSheet.create({
     padding: 15,
     elevation: 5,
   },
-  iconContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  captureButton: {
-    position: 'absolute',
-    bottom: 30,
-    alignSelf: 'center',
-    backgroundColor: '#1919',
-    borderRadius: 40,
-    padding: 15,
-    elevation: 5,
-  },
+ 
+  
   backButton: {
     position: 'absolute',
     top: 30,
@@ -338,16 +299,7 @@ const styles = StyleSheet.create({
     padding: 10,
     elevation: 5,
   },
-  toggleButton: {
-    position: 'absolute',
-    bottom: 30,
-    alignSelf: 'flex-end',
-    backgroundColor: '#1919',
-    borderRadius: 40,
-    padding: 15,
-    elevation: 5,
-    right: 10,
-  },
+  
   markerImage: {
     width: 50,
     height: 50,
@@ -379,5 +331,15 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
   },
+  button: {
+    justifyContent: "center",
+    backgroundColor: "#1919",
+    elevation: 5,
+    alignItems: "center",
+    height: 50,
+    width: 50,
+    borderRadius: 100,
+    marginHorizontal: 8,
+  }
 });
 
