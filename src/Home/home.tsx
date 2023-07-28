@@ -18,17 +18,18 @@ import * as Location from 'expo-location';
 import * as MediaLibrary from 'expo-media-library';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Animatable from 'react-native-animatable';
-import { onValue, push, ref } from 'firebase/database';
-import { app, db } from '../../firebase-config';
+import { onValue, push, ref, update } from 'firebase/database';
+
 import * as firebaseStorage from '@firebase/storage'
 import { Camera } from 'expo-camera';
+import {app , db } from '../../firebase-config';
 
 
 export default function HomePage ({ navigation, route })  {
   const { capturedImage } = route.params;
   const [markers, setMarkers] = useState<PlaceEntity[]>([]);
   const [currentLocation, setCurrentLocation] = useState<any>(null);
-  const [isModalVisible, setModalVisible] = useState(false);
+  const [isModalVisible, setModalVisible] = useState(null);
   const [markerImageUri, setMarkerImageUri] = useState<string | null>(null);
   const [markerDescription, setMarkerDescription] = useState('');
   const [isEditing, setEditing] = useState(false);
@@ -197,6 +198,12 @@ export default function HomePage ({ navigation, route })  {
     
 
   }
+  async function updateItem() {
+  currentLocation.description = markerDescription;
+    update(ref(db, '/places/' +  currentLocation.description.id), currentLocation);
+    setModalVisible({isModalVisible: false });
+    setMarkerDescription('');
+}
 
   return (
     <TouchableWithoutFeedback onPress={dismissKeyboard}>
@@ -445,4 +452,6 @@ const styles = StyleSheet.create({
   },
 
 });
+
+
 

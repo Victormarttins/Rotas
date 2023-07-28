@@ -8,12 +8,13 @@ import Login from './src/TelaLogin/TelaIncial';
 
 
 
-export default function App({navigation}:any) {
+export default function App({navigation}:any) {''
   const Stack = createStackNavigator();
 
   return (
     <NavigationContainer>
-     <Stack.Navigator initialRouteName='HomePage' screenOptions={{ headerShown: false }}>
+     <Stack.Navigator initialRouteName='Login' screenOptions={{ headerShown: false }}>
+     <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="CameraPage" component={CameraPage} />
         <Stack.Screen name="HomePage" component={HomePage} initialParams={{ capturedImage: null }} />
       </Stack.Navigator>
