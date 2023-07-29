@@ -18,11 +18,11 @@ import * as Location from 'expo-location';
 import * as MediaLibrary from 'expo-media-library';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Animatable from 'react-native-animatable';
-import { onValue, push, ref, update } from 'firebase/database';
+import { onValue, push, ref, remove, update } from 'firebase/database';
 
 import * as firebaseStorage from '@firebase/storage'
 import { Camera } from 'expo-camera';
-import {app , db } from '../../firebase-config';
+import {app , db } from '../../firebase-configaa';
 
 
 export default function HomePage ({ navigation, route })  {
@@ -36,7 +36,7 @@ export default function HomePage ({ navigation, route })  {
   const [photoDate, setPhotoDate] = useState<string>('');
   const [markerTitle, setMarkerTitle] = useState('');
   const [isUploading, setIsUploading] = useState(false);
-
+  const[places,setPlaces]=useState<PlaceEntity>();
   
 
   useEffect(() => {
@@ -92,6 +92,7 @@ export default function HomePage ({ navigation, route })  {
       setMarkers([...markers, newMarker]);
       push(ref(db, 'places'), newMarker);
     }
+    console.log('deu ruim')
   };
 
   
@@ -161,8 +162,8 @@ export default function HomePage ({ navigation, route })  {
             setMarkers((places) => [...places, (childValue as PlaceEntity)])
           });
         }
-      } catch (e) {
-        console.log(e);
+      } catch (error) {
+        console.log(error);
       }
 
     });
@@ -200,10 +201,38 @@ export default function HomePage ({ navigation, route })  {
   }
   async function updateItem() {
   currentLocation.description = markerDescription;
-    update(ref(db, '/places/' +  currentLocation.description.id), currentLocation);
-    setModalVisible({isModalVisible: false });
+    update(ref(db, '/places/' +  currentLocation.description.id),currentLocation);
+    setModalVisible( false );
     setMarkerDescription('');
+  setPlaces(null)
+  
 }
+
+async function removeItem() {
+  setModalVisible(false);
+  remove(ref(db, '/places/' +  places.id))
+  
+  
+}
+function showConfirmDialog(){
+  return Alert.alert(
+    'Deseja excluir o local?',
+    "Esta ação não poderá ser desfetuada",
+    [
+      {
+        text: 'sim',
+        onPress:()=>removeItem()
+
+      },
+      {
+        text:'Não',
+      }
+    ]
+
+   
+  )
+}
+
 
   return (
     <TouchableWithoutFeedback onPress={dismissKeyboard}>
@@ -254,6 +283,7 @@ export default function HomePage ({ navigation, route })  {
                 animation="fadeInUp"
                 duration={500}
                 useNativeDriver
+                
               >
                 <View style={styles.modalHeader}>
                   <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
@@ -292,18 +322,21 @@ export default function HomePage ({ navigation, route })  {
                 <View style={styles.modalButtonContainer}>
                   {!isEditing && (
                     <Animatable.View animation="fadeIn" duration={500} delay={200}>
-                      <TouchableOpacity
+                      <TouchableWithoutFeedback
                         style={[styles.editButton, { backgroundColor: '#1976D2' }]}
-                        onPress={handleEdit}
+                        onPress={handleEdit }
+                
                       >
+
+                        
                         <Text style={styles.buttonText}>Editar</Text>
-                      </TouchableOpacity>
+                      </TouchableWithoutFeedback>
                     </Animatable.View>
                   )}
                   <Animatable.View animation="fadeIn" duration={500} delay={200}>
                     <TouchableOpacity
                       style={[styles.saveButton, { backgroundColor: '#303F9F' }]}
-                      onPress={handleSaveMarker}
+                      onPress={updateItem}
                     >
                       <Text style={styles.buttonText}>Salvar</Text>
                     </TouchableOpacity>
@@ -311,7 +344,9 @@ export default function HomePage ({ navigation, route })  {
                   <Animatable.View animation="fadeIn" duration={500} delay={300}>
                     <TouchableOpacity
                       style={[styles.deleteButton, { backgroundColor: '#FF0000' }]}
-                      onPress={() => handleDeleteMarker(markerImageUri as string)}
+                      onPress={() => {
+                        showConfirmDialog();
+                      }}
                     >
                       <Text style={styles.buttonText}>Deletar</Text>
                     </TouchableOpacity>
