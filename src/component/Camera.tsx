@@ -4,7 +4,7 @@ import { Camera } from 'expo-camera';
 import { MaterialIcons } from '@expo/vector-icons';
 
 
-export default function CameraPage ({ navigation }):any {
+const CamPage = ({ navigation }: any) => {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [cameraType, setCameraType] = useState<number>(Camera.Constants.Type['back']);
   const cameraRef = useRef<Camera | null>(null);
@@ -69,3 +69,4 @@ const styles = StyleSheet.create({
   },
 });
 
+export default CamPage;

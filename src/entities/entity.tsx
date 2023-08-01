@@ -1,4 +1,4 @@
-interface PlaceEntity {
+interface MarkerEntity {
 
   id: string;
   title: string;
