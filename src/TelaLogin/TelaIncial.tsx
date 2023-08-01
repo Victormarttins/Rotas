@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 
 export default function Login({ navigation,route }) {
-  const [x, setX] = useState(0);
+
   const slide = new Animated.Value(-200);
   
 

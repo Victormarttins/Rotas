@@ -228,6 +228,7 @@ export default function HomePage ({ navigation, route }) {
               latitudeDelta: 0.0922,
               longitudeDelta: 0.0421,
             }}
+            showsUserLocation={true}
           >
             {markers.map((marker) => (
               <Marker
