@@ -22,7 +22,7 @@ import * as Animatable from 'react-native-animatable';
 
 
 import { onValue, push, ref, remove, update } from 'firebase/database';
-import { app, db } from '../../firebase-config'
+import { app, db } from '../../firebase-configtw'
 import * as firebaseStorage from '@firebase/storage'
 import { Camera } from 'expo-camera';
 
