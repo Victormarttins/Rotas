@@ -8,57 +8,71 @@ import {
   Button,
   Animated,
 } from 'react-native';
-
-export default function Login({ navigation,route }) {
+import * as SecureStore from 'expo-secure-store';
+export default function Login({ navigation, route }) {
 
   const slide = new Animated.Value(-200);
   
+  const [username, setUsername] = useState('');
 
   useEffect(() => {
     Animated.timing(slide, {
       toValue: 0,
       duration: 1000,
       useNativeDriver: true,
-    }).start(); 
+    }).start();
+
+ checkLoggedIn();
+  }, []);
+
 
    
-  }, []);
+
+const checkLoggedIn = async () => {
+  try {
+      const storedUsername = await SecureStore.getItemAsync("username");
+      if (storedUsername) {
+          navigation.navigate("HomePage");
+      }
+  } catch (error) {
+      console.log("Erro ao verificar login:", error);
+  }
+};
+const handleLogin = async () => {
+  try {
+      await SecureStore.setItemAsync("username", username);
+      console.log("Nome de usuário salvo com sucesso!");
+  } catch (error) {
+      console.log("Erro ao salvar o nome de usuário:", error);
+  }
+
+  navigation.navigate("HomePage")
+};
 
   return (
 
     <View style={styles.container}>
+      <Text style={{ fontSize: 45, justifyContent: 'center', right: 5, marginBottom: 25, fontWeight: '800' }}> Show The Way</Text>
       <Animated.View style={[styles.animaçao, { transform: [{ translateX: slide }] }]}>
-      <Image style={styles.img} source={{uri:"https://www.totvs.com/wp-content/uploads/2022/05/gerenciador-de-rotas.jpg"}} />
-      </Animated.View>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          keyboardType="email-address"
-          textContentType="emailAddress"
-          autoCapitalize="none"
-          autoComplete="email"
-          autoCorrect={false}
-          onChangeText={() => { }}
-        />
-      
-        <TextInput
-          style={styles.input}
-          placeholder="Senha"
-          textContentType="password"
-          autoCapitalize="none"
-          autoComplete="password"
-          autoCorrect={false}
-          secureTextEntry={true}
-          onChangeText={() => { }}
-        />
-      
 
-      
-        <TouchableHighlight style={styles.buttonSubmit}
-          onPress={() => navigation.navigate('HomePage')}>
-          <Text style={styles.submitText}>Acessar</Text>
-        </TouchableHighlight>
-      
+        <Image style={styles.img} source={{ uri: "https://www.totvs.com/wp-content/uploads/2022/05/gerenciador-de-rotas.jpg" }} />
+      </Animated.View>
+    <TextInput
+
+        style={styles.input}
+        placeholder="Nome"
+        value={username}
+        onChangeText={setUsername}
+    />
+
+
+      <TouchableHighlight style={styles.buttonSubmit}
+        onPress={handleLogin}
+        >
+        <Text style={styles.submitText}>Login</Text>
+      </TouchableHighlight>
+    
+  
 
     </View>
   );
@@ -69,6 +83,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#1919'
   },
 
   input: {
@@ -94,22 +109,22 @@ const styles = StyleSheet.create({
 
   submitText: {
     color: '#FFF',
-    fontSize: 19
+    fontSize: 25,
+    fontWeight: '800'
   },
 
   img: {
     width: '100%',
-    height:'100%',
-    borderRadius:40,
-    marginHorizontal:3
+    height: '100%',
+    borderRadius: 40,
+    marginHorizontal: 3
   },
-  animaçao:{
+  animaçao: {
     width: '90%',
-    height:300,
-    borderRadius:30,
-  
-    paddingBottom:40
+    height: 300,
+    borderRadius: 30,
+
+    paddingBottom: 40
   }
 })
 
- 

@@ -328,6 +328,10 @@ export default function HomePage ({ navigation, route }) {
                         >
                           <Text style={styles.buttonText}>Deletar</Text>
                         </TouchableOpacity>
+
+
+                        
+
                       </Animatable.View>
                     </View>
                   </Animatable.View>
