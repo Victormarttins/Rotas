@@ -9,7 +9,7 @@ import {
   Animated,
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-export default function Login({ navigation, route }) {
+export default function Login({ navigation}) {
 
   const slide = new Animated.Value(-200);
   
@@ -38,7 +38,7 @@ const checkLoggedIn = async () => {
       console.log("Erro ao verificar login:", error);
   }
 };
-const handleLogin = async () => {
+const Login = async () => {
   try {
       await SecureStore.setItemAsync("username", username);
       console.log("Nome de usuário salvo com sucesso!");
@@ -67,7 +67,7 @@ const handleLogin = async () => {
 
 
       <TouchableHighlight style={styles.buttonSubmit}
-        onPress={handleLogin}
+        onPress={Login}
         >
         <Text style={styles.submitText}>Login</Text>
       </TouchableHighlight>

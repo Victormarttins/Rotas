@@ -9,5 +9,6 @@ interface MarkerEntity {
     longitude: number;
   };
   imagePath: string;
+ author: string;
 }
 

@@ -26,7 +26,7 @@ import { app, db } from '../../firebase-configtw'
 import * as firebaseStorage from '@firebase/storage'
 import { Camera } from 'expo-camera';
 
-
+import { Entypo } from '@expo/vector-icons';
 export default function HomePage ({ navigation, route }) {
   const { capturedImage } = route.params;
   const [markers, setMarkers] = useState<MarkerEntity[]>([]);
@@ -118,12 +118,13 @@ export default function HomePage ({ navigation, route }) {
      
 
       const newMarker: MarkerEntity = {
-        id: '',
+        id:'',
         coords: { latitude: currentLocation.latitude, longitude: currentLocation.longitude },
         imagePath: await uploadImage(capturedImage),
         description: '',
         photoDate: '',
-        title: ''
+        title: '',
+        author: '',
       };
       push(ref(db, 'places'), newMarker);
     }
@@ -328,6 +329,16 @@ export default function HomePage ({ navigation, route }) {
                         >
                           <Text style={styles.buttonText}>Deletar</Text>
                         </TouchableOpacity>
+                          <View>
+                            <Text>Autor:{markerPress.author}</Text>
+                          </View>
+
+
+
+                        <TouchableOpacity>
+
+                        <Entypo name="chat" size={30} color="black" />
+                        </TouchableOpacity>
 
 
                         
@@ -392,7 +403,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 10,
     padding: 20,
-    width: '80%',
+    width: '90%',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -471,4 +482,8 @@ const styles = StyleSheet.create({
   },
 
 });
+
+function checkLoggedIn(arg0: string): string | PromiseLike<string> {
+  throw new Error('Function not implemented.');
+}
 
