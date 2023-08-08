@@ -27,6 +27,7 @@ import * as firebaseStorage from '@firebase/storage'
 import { Camera } from 'expo-camera';
 
 import { Entypo } from '@expo/vector-icons';
+import { getStoredData } from '../sheared/secure-store-sercive';
 export default function HomePage ({ navigation, route }) {
   const { capturedImage } = route.params;
   const [markers, setMarkers] = useState<MarkerEntity[]>([]);
@@ -124,7 +125,7 @@ export default function HomePage ({ navigation, route }) {
         description: '',
         photoDate: '',
         title: '',
-        author: '',
+        author: await getStoredData('username'),
       };
       push(ref(db, 'places'), newMarker);
     }
@@ -329,15 +330,20 @@ export default function HomePage ({ navigation, route }) {
                         >
                           <Text style={styles.buttonText}>Deletar</Text>
                         </TouchableOpacity>
-                          <View>
+                          <View style={{width:'100%',right:205,padding:25
+                        
+                        }}>
                             <Text>Autor:{markerPress.author}</Text>
                           </View>
 
 
 
-                        <TouchableOpacity>
+                        <TouchableOpacity
+                        style={{marginBottom:2}}
+                        onPress={navigation.navigate('ChatPage')}
+                        >
 
-                        <Entypo name="chat" size={30} color="black" />
+                        <Entypo name="chat" size={40} color="black" />
                         </TouchableOpacity>
 
 
@@ -395,15 +401,17 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   modalContainer: {
-    flex: 1,
+  
+    width:'100%',
+    height:"80%",
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 10,
-    padding: 20,
-    width: '90%',
+    padding: 10,
+    width: '80%',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -419,7 +427,7 @@ const styles = StyleSheet.create({
     width: 250,
     height: 250,
     borderRadius: 10,
-    marginBottom: 10,
+    marginBottom: 5,
     alignSelf: 'center',
   },
   modalTitle: {
@@ -452,20 +460,20 @@ const styles = StyleSheet.create({
   },
   editButton: {
     backgroundColor: '#303F9F',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 9,
   },
   saveButton: {
     backgroundColor: '#303F9F',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingVertical: 9,
+    paddingHorizontal: 10,
     borderRadius: 5,
   },
   deleteButton: {
     backgroundColor: '#303F9F',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingVertical: 9,
+    paddingHorizontal: 10,
     borderRadius: 5,
   },
   buttonText: {
@@ -483,7 +491,5 @@ const styles = StyleSheet.create({
 
 });
 
-function checkLoggedIn(arg0: string): string | PromiseLike<string> {
-  throw new Error('Function not implemented.');
-}
+
 
