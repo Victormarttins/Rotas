@@ -18,7 +18,10 @@ export default function App({navigation}:any) {''
      <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="CameraPage" component={CameraPage} />
         <Stack.Screen name="HomePage" component={HomePage} initialParams={{ capturedImage: null }} />
-        <Stack.Screen  name="ChatPage" component={ChatPage}  />
+        <Stack.Screen options={({route})=>({
+          headerShown:false
+        })}
+         name="ChatPage" component={ChatPage}  />
       </Stack.Navigator>
     </NavigationContainer>
   );

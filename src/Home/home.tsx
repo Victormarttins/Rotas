@@ -18,7 +18,7 @@ import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import * as MediaLibrary from 'expo-media-library';
 import { MaterialIcons } from '@expo/vector-icons';
-import * as Animatable from 'react-native-animatable';
+
 
 
 import { onValue, push, ref, remove, update } from 'firebase/database';
@@ -140,11 +140,11 @@ export default function HomePage ({ navigation, route }) {
       Alert.alert('Erro ao salvar imagem na galeria:', error);
     }
   };
-
+//
   const handleMarkerPress = (marker: MarkerEntity) => {
-    setModalVisible(true);
     setMarkerPress(marker);
     setEditing(false);
+    setModalVisible(true);
 
   };
 
@@ -255,19 +255,10 @@ export default function HomePage ({ navigation, route }) {
         {
           isModalVisible ?
 
-            <Modal visible={isModalVisible} animationType="slide" transparent={true}>
+            <Modal visible={isModalVisible} > 
               <TouchableWithoutFeedback onPress={dismissKeyboard}>
-                <KeyboardAvoidingView
-                  behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                  style={styles.modalContainer}
-                  keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
-                >
-                  <Animatable.View
-                    style={styles.modalContent}
-                    animation="fadeInUp"
-                    duration={500}
-                    useNativeDriver
-                  >
+               
+                  <View>
                     <View style={styles.modalHeader}>
                       <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
                         <MaterialIcons name="close" size={24} color="black" />
@@ -306,59 +297,56 @@ export default function HomePage ({ navigation, route }) {
                     )}
                     <View style={styles.modalButtonContainer}>
                       {!isEditing && (
-                        <Animatable.View animation="fadeIn" duration={500} delay={200}>
+                        <View>
                           <TouchableOpacity
                             style={[styles.editButton, { backgroundColor: '#1976D2' }]}
                             onPress={handleEdit}
                           >
                             <Text style={styles.buttonText}>Editar</Text>
                           </TouchableOpacity>
-                        </Animatable.View>
+                       </View>
                       )}
-                      <Animatable.View animation="fadeIn" duration={500} delay={200}>
+                        <View>
                         <TouchableOpacity
                           style={[styles.saveButton, { backgroundColor: '#303F9F' }]}
                           onPress={updateItem}
                         >
                           <Text style={styles.buttonText}>Salvar</Text>
                         </TouchableOpacity>
-                      </Animatable.View>
-                      <Animatable.View animation="fadeIn" duration={500} delay={300}>
+                      </View>
+
+                       <View>
                         <TouchableOpacity
                           style={[styles.deleteButton, { backgroundColor: '#FF0000' }]}
                           onPress={showModalConfirmDialog}
                         >
                           <Text style={styles.buttonText}>Deletar</Text>
                         </TouchableOpacity>
-                          <View style={{width:'100%',right:205,padding:25
+                          <View style={{width:'90%',right:205,padding:25
                         
                         }}>
-                            <Text>Autor:{markerPress.author}</Text>
+                            <Text style={{fontSize:25 }}>Autor:   {markerPress.author}</Text>
                           </View>
+                          
+                          <TouchableOpacity
+                          onPress={navigation.navigate('ChatPage')}
+                          >
+                            <Entypo name='chat'color='black'/>
 
-
-
-                        <TouchableOpacity
-                        style={{marginBottom:2}}
-                        onPress={navigation.navigate('ChatPage')}
-                        >
-
-                        <Entypo name="chat" size={40} color="black" />
-                        </TouchableOpacity>
-
-
+                          </TouchableOpacity>
                         
-
-                      </Animatable.View>
+                     
                     </View>
-                  </Animatable.View>
-                </KeyboardAvoidingView>
-              </TouchableWithoutFeedback>
+                   
+                    </View>
+                    </View>
+          </TouchableWithoutFeedback>
             </Modal> :
             <></>
+            
         }
       </View>
-    </TouchableWithoutFeedback>
+      </TouchableWithoutFeedback>
   );
 };
 
@@ -401,9 +389,8 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   modalContainer: {
-  
-    width:'100%',
-    height:"80%",
+   flex:1,
+   backgroundColor:'#fff',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -461,19 +448,19 @@ const styles = StyleSheet.create({
   editButton: {
     backgroundColor: '#303F9F',
     paddingVertical: 5,
-    paddingHorizontal: 10,
+    paddingHorizontal: 9,
     borderRadius: 9,
   },
   saveButton: {
     backgroundColor: '#303F9F',
     paddingVertical: 9,
-    paddingHorizontal: 10,
+    paddingHorizontal: 9,
     borderRadius: 5,
   },
   deleteButton: {
     backgroundColor: '#303F9F',
     paddingVertical: 9,
-    paddingHorizontal: 10,
+    paddingHorizontal: 9,
     borderRadius: 5,
   },
   buttonText: {

@@ -9,11 +9,12 @@ import {
   Animated,
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import { getStoredData, setStoredData } from '../sheared/secure-store-sercive';
 export default function Login({ navigation}) {
 
   const slide = new Animated.Value(-200);
   
-  const [username, setUsername] = useState('');
+  const [author, setauthor] = useState('');
 
   useEffect(() => {
     Animated.timing(slide, {
@@ -22,32 +23,30 @@ export default function Login({ navigation}) {
       useNativeDriver: true,
     }).start();
 
- checkLoggedIn();
+
+    getAuthor();
+ 
   }, []);
+
+
+
+  function login(){
+    setStoredData('author',author)
+    navigation.navigate('HomePage');
+
+  }
+  
+  async function getAuthor(){
+    const localAuthor = await getStoredData('author');
+   console.log(localAuthor)
+    if(localAuthor){
+      navigation.navigate('HomePage')
+    }
+  }
 
 
    
 
-const checkLoggedIn = async () => {
-  try {
-      const storedUsername = await SecureStore.getItemAsync("username");
-      if (storedUsername) {
-          navigation.navigate("HomePage");
-      }
-  } catch (error) {
-      console.log("Erro ao verificar login:", error);
-  }
-};
-const Login = async () => {
-  try {
-      await SecureStore.setItemAsync("username", username);
-      console.log("Nome de usuário salvo com sucesso!");
-  } catch (error) {
-      console.log("Erro ao salvar o nome de usuário:", error);
-  }
-
-  navigation.navigate("HomePage")
-};
 
   return (
 
@@ -61,13 +60,13 @@ const Login = async () => {
 
         style={styles.input}
         placeholder="Nome"
-        value={username}
-        onChangeText={setUsername}
+        value={author}
+        onChangeText={setauthor}
     />
 
 
       <TouchableHighlight style={styles.buttonSubmit}
-        onPress={Login}
+        onPress={login}
         >
         <Text style={styles.submitText}>Login</Text>
       </TouchableHighlight>

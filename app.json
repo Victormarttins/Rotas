@@ -21,11 +21,21 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyADU3bOiJGUeUU2_OHylHLwnM-Djo1UQGM"
+        }
+      },
+      "package": "com.victorhugovh.camera"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "acbbdbd1-9c6b-4d6f-ab79-d588ddd95829"
+      }
     }
-    
   }
 }
