@@ -9,7 +9,7 @@ import {
   Animated,
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-import { getStoredData, setStoredData } from '../sheared/secure-store-sercive';
+import { getStorageData, setStorageData } from '../sheared/secure-store-sercive';
 export default function Login({ navigation}) {
 
   const slide = new Animated.Value(-200);
@@ -31,13 +31,13 @@ export default function Login({ navigation}) {
 
 
   function login(){
-    setStoredData('author',author)
+    setStorageData('author',author)
     navigation.navigate('HomePage');
 
   }
   
   async function getAuthor(){
-    const localAuthor = await getStoredData('author');
+    const localAuthor = await getStorageData('author');
    console.log(localAuthor)
     if(localAuthor){
       navigation.navigate('HomePage')

@@ -3,10 +3,11 @@ import { View, Text, TextInput, TouchableOpacity, FlatList, Image, StyleSheet, K
 
 import { onValue, push, ref } from 'firebase/database';
 
-import { db } from '../../firebase-configtw';
+import { db } from '../../firebase-config';
+import { getStorageData } from '../sheared/secure-store-sercive';
 import ChatEntity from '../entities/chat-Entity';
 
-export default  function ChatPage ({ navigation, route }) {
+const ChatPage = ({ navigation, route }) => {
   const [messages, setMessages] = useState<ChatEntity[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const flatListRef = useRef(null);
@@ -18,8 +19,8 @@ export default  function ChatPage ({ navigation, route }) {
   }, []);
 
   async function getAuthor() {
-    const storeAuthor = await getStorageData('author');
-    setAuthor(storeAuthor);
+    const storedAuthor = await getStorageData('author');
+    setAuthor(storedAuthor);
   }
 
   async function getMessages() {
@@ -58,8 +59,11 @@ export default  function ChatPage ({ navigation, route }) {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}>
+   
+      
+      <View style={styles.container}>
+                <Image style={{width:'50%',height:'50%' ,position:"absolute"}} source={{uri:" https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1VOrzttGGG8v806Uhs8qc2I28ITbZM_QUlw&usqp=CAU"}}/>
+
       <View style={styles.container}>
         <View style={styles.chatContainer}>
           <FlatList
@@ -67,6 +71,8 @@ export default  function ChatPage ({ navigation, route }) {
             data={messages}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
+              
+             
               <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', marginHorizontal: 3 }}>
                 <View style={styles.ImageName}>
                   <Image
@@ -82,6 +88,7 @@ export default  function ChatPage ({ navigation, route }) {
                   </View>
                 </View>
               </View>
+          
             )}
             contentContainerStyle={styles.messageList}
           />
@@ -98,7 +105,9 @@ export default  function ChatPage ({ navigation, route }) {
           </TouchableOpacity>
         </View>
       </View>
-    </KeyboardAvoidingView>
+      </View>
+      
+     
   );
 };
 
@@ -142,7 +151,7 @@ const styles = StyleSheet.create({
 
   },
   authorName: {
-    fontSize: 12,
+    fontSize: 14,
     color: 'black',
     marginTop: 3
   },
@@ -188,8 +197,4 @@ const styles = StyleSheet.create({
   },
 });
 
-
-function getStorageData(arg0: string) {
-    throw new Error('Function not implemented.');
-}
-
+export default ChatPage;

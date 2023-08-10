@@ -22,12 +22,12 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 
 import { onValue, push, ref, remove, update } from 'firebase/database';
-import { app, db } from '../../firebase-configtw'
+import { app, db } from '../../firebase-config'
 import * as firebaseStorage from '@firebase/storage'
 import { Camera } from 'expo-camera';
 
 import { Entypo } from '@expo/vector-icons';
-import { getStoredData } from '../sheared/secure-store-sercive';
+import { getStorageData } from '../sheared/secure-store-sercive';
 export default function HomePage ({ navigation, route }) {
   const { capturedImage } = route.params;
   const [markers, setMarkers] = useState<MarkerEntity[]>([]);
@@ -125,7 +125,7 @@ export default function HomePage ({ navigation, route }) {
         description: '',
         photoDate: '',
         title: '',
-        author: await getStoredData('username'),
+        author: await getStorageData('username'),
       };
       push(ref(db, 'places'), newMarker);
     }
@@ -248,28 +248,43 @@ export default function HomePage ({ navigation, route }) {
           <Text style={styles.loadingText}>Carregando mapa...</Text>
         )}
 
-        <TouchableOpacity style={styles.cameraButton} onPress={() => navigation.navigate('CameraPage')}>
+<TouchableOpacity style={styles.cameraButton} onPress={() => navigation.navigate('CamPage')}>
           <MaterialIcons name="camera" size={30} color="#FFFFFF" />
         </TouchableOpacity>
 
         {
           isModalVisible ?
 
-            <Modal visible={isModalVisible} > 
+            <Modal visible={isModalVisible} animationType="slide" transparent={true}>
               <TouchableWithoutFeedback onPress={dismissKeyboard}>
-               
-                  <View>
+                <KeyboardAvoidingView
+                  behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                  style={styles.modalContainer}
+                  keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
+                >
+                  <View
+                    style={styles.modalContent}
+                   
+                  >
                     <View style={styles.modalHeader}>
+                      <TouchableOpacity
+                        style={[styles.chatButton, { backgroundColor: '#25D366' }]}
+                        onPress={() =>
+                          navigation.navigate('ChatPage', { marker: markerPress }, setModalVisible(false))}
+                      >
+                        <Text style={styles.buttonText}>Chat</Text>
+                      </TouchableOpacity>
                       <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
                         <MaterialIcons name="close" size={24} color="black" />
                       </TouchableOpacity>
                     </View>
                     {markerPress && (
-                      <TouchableNativeFeedback onPress={() => {setModalVisible(false), navigation.navigate('Marker', {marker: markerPress})}}>
-                      <Image source={{ uri: markerPress.imagePath }} style={styles.modalImage} />
+                      <TouchableNativeFeedback onPress={() => { setModalVisible(false), navigation.navigate('Marker', { marker: markerPress }) }}>
+                        <Image source={{ uri: markerPress.imagePath }} style={styles.modalImage} />
                       </TouchableNativeFeedback>
                     )}
-                    <Text style={styles.dateStyle}>{photoDate}</Text>
+                    <Text style={styles.dateStyle}>Data: {markerPress.photoDate}</Text>
+                    <Text style={styles.dateStyle}>Autor: {markerPress.author}</Text>
 
 
                     {isEditing ? (
@@ -297,16 +312,16 @@ export default function HomePage ({ navigation, route }) {
                     )}
                     <View style={styles.modalButtonContainer}>
                       {!isEditing && (
-                        <View>
+                        <View >
                           <TouchableOpacity
                             style={[styles.editButton, { backgroundColor: '#1976D2' }]}
                             onPress={handleEdit}
                           >
                             <Text style={styles.buttonText}>Editar</Text>
                           </TouchableOpacity>
-                       </View>
+                        </View>
                       )}
-                        <View>
+                      <View >
                         <TouchableOpacity
                           style={[styles.saveButton, { backgroundColor: '#303F9F' }]}
                           onPress={updateItem}
@@ -314,39 +329,23 @@ export default function HomePage ({ navigation, route }) {
                           <Text style={styles.buttonText}>Salvar</Text>
                         </TouchableOpacity>
                       </View>
-
-                       <View>
+                      <View>
                         <TouchableOpacity
                           style={[styles.deleteButton, { backgroundColor: '#FF0000' }]}
                           onPress={showModalConfirmDialog}
                         >
                           <Text style={styles.buttonText}>Deletar</Text>
                         </TouchableOpacity>
-                          <View style={{width:'90%',right:205,padding:25
-                        
-                        }}>
-                            <Text style={{fontSize:25 }}>Autor:   {markerPress.author}</Text>
-                          </View>
-                          
-                          <TouchableOpacity
-                          onPress={navigation.navigate('ChatPage')}
-                          >
-                            <Entypo name='chat'color='black'/>
-
-                          </TouchableOpacity>
-                        
-                     
+                      </View>
                     </View>
-                   
-                    </View>
-                    </View>
-          </TouchableWithoutFeedback>
+                  </View>
+                </KeyboardAvoidingView>
+              </TouchableWithoutFeedback>
             </Modal> :
             <></>
-            
         }
       </View>
-      </TouchableWithoutFeedback>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -389,20 +388,20 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   modalContainer: {
-   flex:1,
-   backgroundColor:'#fff',
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 10,
-    padding: 10,
+    padding: 20,
     width: '80%',
   },
   modalHeader: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
+    marginBottom: 10,
   },
   closeButton: {
     backgroundColor: 'white',
@@ -414,7 +413,7 @@ const styles = StyleSheet.create({
     width: 250,
     height: 250,
     borderRadius: 10,
-    marginBottom: 5,
+    marginBottom: 10,
     alignSelf: 'center',
   },
   modalTitle: {
@@ -447,22 +446,32 @@ const styles = StyleSheet.create({
   },
   editButton: {
     backgroundColor: '#303F9F',
-    paddingVertical: 5,
-    paddingHorizontal: 9,
-    borderRadius: 9,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
   },
   saveButton: {
     backgroundColor: '#303F9F',
-    paddingVertical: 9,
-    paddingHorizontal: 9,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 5,
   },
   deleteButton: {
     backgroundColor: '#303F9F',
-    paddingVertical: 9,
-    paddingHorizontal: 9,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 5,
   },
+
+  chatButton: {
+    backgroundColor: '#25D366',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    alignItems: 'center'
+
+  },
+
   buttonText: {
     color: '#FFFFFF',
   },
