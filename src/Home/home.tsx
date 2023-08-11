@@ -26,7 +26,7 @@ import { app, db } from '../../firebase-config'
 import * as firebaseStorage from '@firebase/storage'
 import { Camera } from 'expo-camera';
 
-import { Entypo } from '@expo/vector-icons';
+
 import { getStorageData } from '../sheared/secure-store-sercive';
 export default function HomePage ({ navigation, route }) {
   const { capturedImage } = route.params;
@@ -125,7 +125,7 @@ export default function HomePage ({ navigation, route }) {
         description: '',
         photoDate: '',
         title: '',
-        author: await getStorageData('username'),
+        author: await getStorageData('author'),
       };
       push(ref(db, 'places'), newMarker);
     }
@@ -248,7 +248,7 @@ export default function HomePage ({ navigation, route }) {
           <Text style={styles.loadingText}>Carregando mapa...</Text>
         )}
 
-<TouchableOpacity style={styles.cameraButton} onPress={() => navigation.navigate('CamPage')}>
+<TouchableOpacity style={styles.cameraButton} onPress={() => navigation.navigate('CameraPage')}>
           <MaterialIcons name="camera" size={30} color="#FFFFFF" />
         </TouchableOpacity>
 

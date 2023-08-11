@@ -12,16 +12,11 @@ import * as SecureStore from 'expo-secure-store';
 import { getStorageData, setStorageData } from '../sheared/secure-store-sercive';
 export default function Login({ navigation}) {
 
-  const slide = new Animated.Value(-200);
+  
   
   const [author, setauthor] = useState('');
 
   useEffect(() => {
-    Animated.timing(slide, {
-      toValue: 0,
-      duration: 1000,
-      useNativeDriver: true,
-    }).start();
 
 
     getAuthor();
@@ -52,10 +47,10 @@ export default function Login({ navigation}) {
 
     <View style={styles.container}>
       <Text style={{ fontSize: 45, justifyContent: 'center', right: 5, marginBottom: 25, fontWeight: '800' }}> Show The Way</Text>
-      <Animated.View style={[styles.animaçao, { transform: [{ translateX: slide }] }]}>
-
+     
+         <View style={styles.animaçao}>
         <Image style={styles.img} source={{ uri: "https://www.totvs.com/wp-content/uploads/2022/05/gerenciador-de-rotas.jpg" }} />
-      </Animated.View>
+    </View>
     <TextInput
 
         style={styles.input}

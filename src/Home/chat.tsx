@@ -7,7 +7,8 @@ import { db } from '../../firebase-config';
 import { getStorageData } from '../sheared/secure-store-sercive';
 import ChatEntity from '../entities/chat-Entity';
 
-const ChatPage = ({ navigation, route }) => {
+
+export default function ChatPage({ navigation, route }) {
   const [messages, setMessages] = useState<ChatEntity[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const flatListRef = useRef(null);
@@ -120,20 +121,24 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   messageList: {
-    paddingHorizontal: 10,
-    paddingVertical: 10,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingRight: 180,
+    width: '100%',
   },
   messageBubble: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    maxWidth: '40%',
-    padding: 10,
-    borderRadius: 10,
-    marginVertical: 5,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingLeft: 16,
+    width: '100%',
   },
   userBubble: {
-    alignSelf: 'flex-end',
-    backgroundColor: '#EDEDED',
+    backgroundColor: 'white',
+    alignItems: 'flex-end',
+    marginVertical: 4,
+    width: '100%',
   },
   otherBubble: {
     alignSelf: 'flex-start',
@@ -196,5 +201,3 @@ const styles = StyleSheet.create({
     color: 'white',
   },
 });
-
-export default ChatPage;
