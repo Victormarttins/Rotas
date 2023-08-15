@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, Image, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, Image, StyleSheet, ImageBackground, Platform } from 'react-native';
 
-import { onValue, push, ref } from 'firebase/database';
+import { onValue, push, ref ,remove} from 'firebase/database';
 
 import { db } from '../../firebase-config';
 import { getStorageData } from '../sheared/secure-store-sercive';
 import ChatEntity from '../entities/chat-Entity';
+import { Marker } from 'react-native-maps';
 
 
 export default function ChatPage({ navigation, route }) {
@@ -59,11 +60,26 @@ export default function ChatPage({ navigation, route }) {
     setInputMessage('');
   }
 
+  const deleteMessage = async (messageId) => {
+    // Get a reference to the message in the database.
+    await  remove(ref(db, `/messages/${route.params.marker.id}`),);
+  
+   
+    
+  };
+
+
+
+
+  
   return (
    
       
       <View style={styles.container}>
-                <Image style={{width:'50%',height:'50%' ,position:"absolute"}} source={{uri:" https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1VOrzttGGG8v806Uhs8qc2I28ITbZM_QUlw&usqp=CAU"}}/>
+               <ImageBackground
+      source={{ uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKQ82Jtnb31ceBLTfYPfKI_q3Ysz6C0RLFMg&usqp=CAU' }}
+      style={styles.backgroundImage}
+    >
 
       <View style={styles.container}>
         <View style={styles.chatContainer}>
@@ -104,8 +120,14 @@ export default function ChatPage({ navigation, route }) {
           <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
             <Text style={styles.buttonText}>Enviar</Text>
           </TouchableOpacity>
-        </View>
+          <TouchableOpacity onPress={ deleteMessage}>
+    <Text style={styles.deleteButton}>Excluir</Text>
+  </TouchableOpacity>
+ 
+        </View> 
+       
       </View>
+       </ImageBackground>
       </View>
       
      
@@ -115,34 +137,61 @@ export default function ChatPage({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    
+  },
+  backgroundImage: {
+    flex:1,
+    
+    justifyContent: 'center', // Ajuste a justificação vertical conforme necessário
+    alignItems: 'center', // 
+    resizeMode: 'cover',
+   
+  
+  },
+ 
+  deleteButton: {
+    color: 'red',
+    marginLeft: 10,
   },
   chatContainer: {
     flex: 1,
   },
   messageList: {
-    backgroundColor: 'white',
+    
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingRight: 180,
     width: '100%',
   },
   messageBubble: {
-    backgroundColor: 'white',
+    
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingLeft: 16,
-    width: '100%',
+    width: '60%',
   },
-  userBubble: {
-    backgroundColor: 'white',
-    alignItems: 'flex-end',
-    marginVertical: 4,
-    width: '100%',
-  },
+ 
+    userBubble: {
+      padding: 5,
+  marginTop: 30,
+  backgroundColor: 'gray',
+  alignItems: 'flex-end',
+  marginVertical: 4,
+  paddingRight: 20,
+  justifyContent: 'space-between',
+  borderRadius: 50,
+  alignSelf: 'flex-end', // Alinhar no canto direito
+    },
+
   otherBubble: {
-    alignSelf: 'flex-start',
+    marginTop: 30,
+    alignItems: 'flex-start', // Alinhar à esquerda
     backgroundColor: '#EDEDED',
+    marginLeft: 5,
+    paddingLeft: 20,
+    paddingVertical: 10, // Adicione algum espaçamento vertical
+    borderRadius: 50,
+    alignSelf: 'flex-start',
   },
   ImageName: {
     flexDirection: 'column',
@@ -156,8 +205,9 @@ const styles = StyleSheet.create({
 
   },
   authorName: {
-    fontSize: 14,
+    fontSize: 13,
     color: 'black',
+    fontWeight:'400',
     marginTop: 3
   },
   messageContent: {
@@ -198,6 +248,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   buttonText: {
-    color: 'white',
+    
   },
 });
